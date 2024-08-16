@@ -184,7 +184,6 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
                       height: 60,
                       child: TextFormField(
                         controller: hexController,
-                        maxLength: 6,
                         buildCounter: (context,
                                 {required currentLength, required isFocused, required maxLength}) =>
                             const SizedBox.shrink(),

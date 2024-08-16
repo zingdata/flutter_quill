@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart'
     show ColorPicker, MaterialPicker, colorToHex;
@@ -30,11 +32,12 @@ class ColorPickerDialog extends StatefulWidget {
 }
 
 class ColorPickerDialogState extends State<ColorPickerDialog> {
-  var pickerType = _PickerType.material;
-  var selectedColor = Colors.black;
+  var pickerType = _PickerType.color;
+  var selectedColor = Colors.blue.shade100;
 
   late final TextEditingController hexController;
   late void Function(void Function()) colorBoxSetState;
+  Timer? debounceTimer;
 
   @override
   void initState() {
@@ -47,51 +50,88 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
     }
   }
 
+  Timer debounce(
+    Timer? timer,
+    VoidCallback onDebounce,
+    VoidCallback callback, {
+    Duration duration = const Duration(milliseconds: 300),
+  }) {
+    if (timer?.isActive ?? false) {
+      timer?.cancel();
+      onDebounce();
+    }
+    return Timer(duration, callback);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(context.loc.selectColor),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(context.loc.selectColor),
+          const CloseButton(),
+        ],
+      ),
       actions: [
-        TextButton(
-            onPressed: () {
-              widget.onRequestChangeColor(context, selectedColor);
-              Navigator.of(context).pop();
-            },
-            child: Text(context.loc.ok)),
+        OutlinedButton(
+          onPressed: () {
+            widget.onRequestChangeColor(context, null);
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            context.loc.clear,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+          ),
+        ),
+        OutlinedButton(
+          onPressed: () {
+            widget.onRequestChangeColor(context, selectedColor);
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            context.loc.ok,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+        ),
       ],
       backgroundColor: Theme.of(context).canvasColor,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      pickerType = _PickerType.material;
-                    });
-                  },
-                  child: Text(context.loc.material),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      pickerType = _PickerType.color;
-                    });
-                  },
-                  child: Text(context.loc.color),
-                ),
-                TextButton(
-                  onPressed: () {
-                    widget.onRequestChangeColor(context, null);
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(context.loc.clear),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
+            // Row(
+            //   children: [
+            //     TextButton(
+            //       onPressed: () {
+            //         setState(() {
+            //           pickerType = _PickerType.material;
+            //         });
+            //       },
+            //       child: Text(context.loc.material),
+            //     ),
+            //     TextButton(
+            //       onPressed: () {
+            //         setState(() {
+            //           pickerType = _PickerType.color;
+            //         });
+            //       },
+            //       child: Text(context.loc.color),
+            //     ),
+            //     TextButton(
+            //       onPressed: () {
+            //         widget.onRequestChangeColor(context, null);
+            //         Navigator.of(context).pop();
+            //       },
+            //       child: Text(context.loc.clear),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 6),
             Column(
               children: [
                 if (pickerType == _PickerType.material)
@@ -105,11 +145,23 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
                 if (pickerType == _PickerType.color)
                   ColorPicker(
                     pickerColor: selectedColor,
+                    labelTypes: const [],
+                    onHsvColorChanged: (hsvColor) {
+                      debounceTimer = debounce(debounceTimer, () {}, () {
+                        final color = hsvColor.toColor();
+                        widget.onRequestChangeColor(context, color);
+                        selectedColor = color;
+                        hexController.text = colorToHex(color);
+                        colorBoxSetState(() {});
+                      });
+                    },
                     onColorChanged: (color) {
-                      widget.onRequestChangeColor(context, color);
-                      hexController.text = colorToHex(color);
-                      selectedColor = color;
-                      colorBoxSetState(() {});
+                      debounceTimer = debounce(debounceTimer, () {}, () {
+                        widget.onRequestChangeColor(context, color);
+                        selectedColor = color;
+                        hexController.text = colorToHex(color);
+                        colorBoxSetState(() {});
+                      });
                     },
                   ),
                 const SizedBox(
@@ -118,13 +170,19 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
                 Row(
                   children: [
                     SizedBox(
-                      width: 100,
+                      width: 120,
                       height: 60,
                       child: TextFormField(
                         controller: hexController,
+                        maxLength: 6,
+                        buildCounter: (context,
+                                {required currentLength, required isFocused, required maxLength}) =>
+                            const SizedBox.shrink(),
                         onChanged: (value) {
-                          selectedColor = hexToColor(value);
-                          colorBoxSetState(() {});
+                          debounceTimer = debounce(debounceTimer, () {}, () {
+                            selectedColor = hexToColor(value);
+                            colorBoxSetState(() {});
+                          });
                         },
                         decoration: InputDecoration(
                           labelText: context.loc.hex,

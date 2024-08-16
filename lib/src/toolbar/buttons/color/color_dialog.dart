@@ -75,7 +75,11 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
       ),
       actions: [
         OutlinedButton(
-          style: Theme.of(context).outlinedButtonTheme.style,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.error,
+            ), // Set the border color and width
+          ),
           onPressed: () {
             widget.onRequestChangeColor(context, null);
             Navigator.of(context).pop();
@@ -88,7 +92,11 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
           ),
         ),
         OutlinedButton(
-          style: Theme.of(context).outlinedButtonTheme.style,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.primary,
+            ), // Set the border color and width
+          ),
           onPressed: () {
             widget.onRequestChangeColor(context, selectedColor);
             Navigator.of(context).pop();

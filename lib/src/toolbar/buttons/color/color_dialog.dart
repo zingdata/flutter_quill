@@ -77,7 +77,7 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
         OutlinedButton(
           style: OutlinedButton.styleFrom(
             side: BorderSide(
-              color: Theme.of(context).colorScheme.error,
+              color: Theme.of(context).colorScheme.secondary,
             ), // Set the border color and width
           ),
           onPressed: () {
@@ -87,7 +87,7 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
           child: Text(
             context.loc.clear,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart' show Brightness, Uint8List, immutable;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart'
     show TextCapitalization, TextInputAction, TextSelectionThemeData;
 import 'package:flutter/widgets.dart';
@@ -10,6 +11,7 @@ import '../../editor_toolbar_shared/config/quill_shared_configurations.dart';
 import '../../toolbar/theme/quill_dialog_theme.dart';
 import '../editor_builder.dart';
 import '../embed/embed_editor_builder.dart';
+import '../raw_editor/builders/leading_block_builder.dart';
 import '../raw_editor/raw_editor.dart';
 import '../widgets/default_styles.dart';
 import '../widgets/delegate.dart';
@@ -56,6 +58,7 @@ class QuillEditorConfigurations extends Equatable {
     this.onSingleLongTapMoveUpdate,
     this.onSingleLongTapEnd,
     this.enableMarkdownStyleConversion = true,
+    this.enableAlwaysIndentOnTab = false,
     this.embedBuilders,
     this.unknownEmbedBuilder,
     this.searchConfigurations = const QuillSearchConfigurations(),
@@ -86,9 +89,12 @@ class QuillEditorConfigurations extends Equatable {
     this.scribbleAreaInsets,
     this.readOnlyMouseCursor = SystemMouseCursors.text,
     this.onPerformAction,
+    this.customLeadingBlockBuilder,
   });
 
   final QuillSharedConfigurations sharedConfigurations;
+
+  final LeadingBlockNodeBuilder? customLeadingBlockBuilder;
 
   @Deprecated('controller will be removed in future versions.')
   final QuillController? controller;
@@ -140,6 +146,16 @@ class QuillEditorConfigurations extends Equatable {
   /// entering '1.' followed by a space or '-' followed by a space
   /// will automatically convert the input into a Markdown list format.
   final bool enableMarkdownStyleConversion;
+
+  /// Enables always indenting when the TAB key is pressed.
+  ///
+  /// When set to true, pressing the TAB key will always insert an indentation
+  /// regardless of the context. If set to false, the TAB key will only indent
+  /// when the cursor is at the beginning of a list item. In other cases, it will
+  /// insert a tab character.
+  ///
+  /// Defaults to false. Must not be null.
+  final bool enableAlwaysIndentOnTab;
 
   /// Additional space around the content of this editor.
   /// by default will be [EdgeInsets.zero]
@@ -258,11 +274,12 @@ class QuillEditorConfigurations extends Equatable {
 
   // Returns whether gesture is handled
   final bool Function(
-      TapDownDetails details, TextPosition Function(Offset offset))? onTapDown;
+          TapDragDownDetails details, TextPosition Function(Offset offset))?
+      onTapDown;
 
   // Returns whether gesture is handled
   final bool Function(
-      TapUpDetails details, TextPosition Function(Offset offset))? onTapUp;
+      TapDragUpDetails details, TextPosition Function(Offset offset))? onTapUp;
 
   // Returns whether gesture is handled
   final bool Function(
@@ -406,6 +423,7 @@ class QuillEditorConfigurations extends Equatable {
     bool? disableClipboard,
     bool? scrollable,
     bool? enableMarkdownStyleConversion,
+    bool? enableAlwaysIndentOnTab,
     double? scrollBottomInset,
     EdgeInsetsGeometry? padding,
     bool? autoFocus,
@@ -443,6 +461,7 @@ class QuillEditorConfigurations extends Equatable {
     ContentInsertionConfiguration? contentInsertionConfiguration,
     GlobalKey<EditorState>? editorKey,
     TextSelectionThemeData? textSelectionThemeData,
+    LeadingBlockNodeBuilder? customLeadingBlockBuilder,
     bool? requestKeyboardFocusOnCheckListChanged,
     QuillEditorElementOptions? elementOptions,
     QuillEditorBuilder? builder,
@@ -455,6 +474,8 @@ class QuillEditorConfigurations extends Equatable {
   }) {
     return QuillEditorConfigurations(
       sharedConfigurations: sharedConfigurations ?? this.sharedConfigurations,
+      customLeadingBlockBuilder:
+          customLeadingBlockBuilder ?? this.customLeadingBlockBuilder,
       // ignore: deprecated_member_use_from_same_package
       controller: controller ?? this.controller,
       placeholder: placeholder ?? this.placeholder,
@@ -465,6 +486,8 @@ class QuillEditorConfigurations extends Equatable {
       padding: padding ?? this.padding,
       enableMarkdownStyleConversion:
           enableMarkdownStyleConversion ?? this.enableMarkdownStyleConversion,
+      enableAlwaysIndentOnTab:
+          enableAlwaysIndentOnTab ?? this.enableAlwaysIndentOnTab,
       autoFocus: autoFocus ?? this.autoFocus,
       isOnTapOutsideEnabled:
           isOnTapOutsideEnabled ?? this.isOnTapOutsideEnabled,

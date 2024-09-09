@@ -3,8 +3,14 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart'
     show CupertinoTheme, cupertinoTextSelectionControls;
 import 'package:flutter/foundation.dart'
-    show ValueListenable, defaultTargetPlatform;
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
+    show ValueListenable, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/gestures.dart'
+    show
+        PointerDeviceKind,
+        TapDragDownDetails,
+        TapDragEndDetails,
+        TapDragStartDetails,
+        TapDragUpDetails;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -257,10 +263,7 @@ class QuillEditorState extends State<QuillEditor>
     Color selectionColor;
     Radius? cursorRadius;
 
-    if (isAppleOS(
-      platform: theme.platform,
-      supportWeb: true,
-    )) {
+    if (theme.isCupertino) {
       final cupertinoTheme = CupertinoTheme.of(context);
       textSelectionControls = cupertinoTextSelectionControls;
       paintCursorAboveText = true;
@@ -292,11 +295,14 @@ class QuillEditorState extends State<QuillEditor>
             key: _editorKey,
             controller: controller,
             configurations: QuillRawEditorConfigurations(
+              customLeadingBuilder:
+                  widget.configurations.customLeadingBlockBuilder,
               focusNode: widget.focusNode,
               scrollController: widget.scrollController,
               scrollable: configurations.scrollable,
               enableMarkdownStyleConversion:
                   configurations.enableMarkdownStyleConversion,
+              enableAlwaysIndentOnTab: configurations.enableAlwaysIndentOnTab,
               scrollBottomInset: configurations.scrollBottomInset,
               padding: configurations.padding,
               readOnly: controller.readOnly,
@@ -308,10 +314,7 @@ class QuillEditorState extends State<QuillEditor>
                   ? (configurations.contextMenuBuilder ??
                       QuillRawEditorConfigurations.defaultContextMenuBuilder)
                   : null,
-              showSelectionHandles: isMobile(
-                platform: theme.platform,
-                supportWeb: true,
-              ),
+              showSelectionHandles: isMobile,
               showCursor: configurations.showCursor ?? true,
               cursorStyle: CursorStyle(
                 color: cursorColor,
@@ -373,7 +376,7 @@ class QuillEditorState extends State<QuillEditor>
           )
         : child;
 
-    if (isWeb()) {
+    if (kIsWeb) {
       // Intercept RawKeyEvent on Web to prevent it from propagating to parents
       // that might interfere with the editor key behavior, such as
       // SingleChildScrollView. Thanks to @wliumelb for the workaround.
@@ -469,11 +472,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
       return;
     }
 
-    final platform = Theme.of(_state.context).platform;
-    if (isAppleOS(
-      platform: platform,
-      supportWeb: true,
-    )) {
+    if (Theme.of(_state.context).isCupertino) {
       renderEditor!.selectPositionAt(
         from: details.globalPosition,
         cause: SelectionChangedCause.longPress,
@@ -488,7 +487,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
     editor?.updateMagnifier(details.globalPosition);
   }
 
-  bool _isPositionSelected(TapUpDetails details) {
+  bool _isPositionSelected(TapDragUpDetails details) {
     if (_state.controller.document.isEmpty()) {
       return false;
     }
@@ -511,7 +510,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   }
 
   @override
-  void onTapDown(TapDownDetails details) {
+  void onTapDown(TapDragDownDetails details) {
     if (_state.configurations.onTapDown != null) {
       if (renderEditor != null &&
           _state.configurations.onTapDown!(
@@ -532,7 +531,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   }
 
   @override
-  void onSingleTapUp(TapUpDetails details) {
+  void onSingleTapUp(TapDragUpDetails details) {
     if (_state.configurations.onTapUp != null &&
         renderEditor != null &&
         _state.configurations.onTapUp!(
@@ -546,9 +545,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
     try {
       if (delegate.selectionEnabled && !_isPositionSelected(details)) {
-        final platform = Theme.of(_state.context).platform;
-        if (isAppleOS(platform: platform, supportWeb: true) ||
-            isDesktop(platform: platform, supportWeb: true)) {
+        if (isAppleOS || isDesktop) {
           // added isDesktop() to enable extend selection in Windows platform
           switch (details.kind) {
             case PointerDeviceKind.mouse:
@@ -611,11 +608,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
     }
 
     if (delegate.selectionEnabled) {
-      final platform = Theme.of(_state.context).platform;
-      if (isAppleOS(
-        platform: platform,
-        supportWeb: true,
-      )) {
+      if (Theme.of(_state.context).isCupertino) {
         renderEditor!.selectPositionAt(
           from: details.globalPosition,
           cause: SelectionChangedCause.longPress,
@@ -738,6 +731,7 @@ class RenderEditor extends RenderEditableContainerBox
   Document document;
   TextSelection selection;
   bool _hasFocus = false;
+  bool get hasFocus => _hasFocus;
   LayerLink _startHandleLayerLink;
   LayerLink _endHandleLayerLink;
 
@@ -944,11 +938,19 @@ class RenderEditor extends RenderEditableContainerBox
   }
 
   Offset? _lastTapDownPosition;
+  Offset? _lastSecondaryTapDownPosition;
+
+  Offset? get lastSecondaryTapDownPosition => _lastSecondaryTapDownPosition;
 
   // Used on Desktop (mouse and keyboard enabled platforms) as base offset
   // for extending selection, either with combination of `Shift` + Click or
   // by dragging
   TextSelection? _extendSelectionOrigin;
+
+  void handleSecondaryTapDown(TapDownDetails details) {
+    _lastTapDownPosition = details.globalPosition;
+    _lastSecondaryTapDownPosition = details.globalPosition;
+  }
 
   @override
   void handleTapDown(TapDownDetails details) {
@@ -957,7 +959,7 @@ class RenderEditor extends RenderEditableContainerBox
 
   bool _isDragging = false;
 
-  void handleDragStart(DragStartDetails details) {
+  void handleDragStart(TapDragStartDetails details) {
     _isDragging = true;
 
     final newSelection = selectPositionAt(
@@ -970,7 +972,7 @@ class RenderEditor extends RenderEditableContainerBox
     _extendSelectionOrigin = newSelection;
   }
 
-  void handleDragEnd(DragEndDetails details) {
+  void handleDragEnd(TapDragEndDetails details) {
     _isDragging = false;
     onSelectionCompleted();
   }
@@ -1116,7 +1118,7 @@ class RenderEditor extends RenderEditableContainerBox
   TextSelection selectWordAtPosition(TextPosition position) {
     final word = getWordBoundary(position);
     // When long-pressing past the end of the text, we want a collapsed cursor.
-    if (position.offset > word.end) {
+    if (position.offset >= word.end) {
       return TextSelection.fromPosition(position);
     }
     return TextSelection(baseOffset: word.start, extentOffset: word.end);
@@ -1450,6 +1452,7 @@ class RenderEditor extends RenderEditableContainerBox
       _floatingCursorRect = null;
       _cursorController.setFloatingCursorTextPosition(null);
     }
+    markNeedsPaint();
   }
 
   void _paintFloatingCursor(PaintingContext context, Offset offset) {

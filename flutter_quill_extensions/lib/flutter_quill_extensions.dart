@@ -13,6 +13,8 @@ export 'src/editor/image/image_embed_types.dart';
 export 'src/editor/image/image_web_embed.dart';
 export 'src/editor/image/models/image_configurations.dart';
 export 'src/editor/image/models/image_web_configurations.dart';
+// TODO: Remove Simple Spell Checker Service
+export 'src/editor/spell_checker/simple_spell_checker_service.dart';
 export 'src/editor/table/table_cell_embed.dart';
 export 'src/editor/table/table_embed.dart';
 export 'src/editor/table/table_models.dart';
@@ -38,6 +40,20 @@ export 'src/toolbar/video/video_button.dart';
 @immutable
 class FlutterQuillExtensions {
   const FlutterQuillExtensions._();
+
+  @Deprecated(
+    '''
+    Spell checker feature has been removed from the package to make it optional and 
+    reduce bundle size. See issue https://github.com/singerdmx/flutter-quill/issues/2142
+    for more details.
+
+    Calling this function will no longer activate the feature.
+    ''',
+  )
+  static void useSpellCheckerService(String language) {
+    // This feature has been removed from the package.
+    // See https://github.com/singerdmx/flutter-quill/issues/2142
+  }
 
   /// Override default implementation of [ClipboardServiceProvider.instance]
   /// to allow `flutter_quill` package to use `super_clipboard` plugin

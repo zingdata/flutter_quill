@@ -124,6 +124,12 @@ class QuillController extends ChangeNotifier {
   /// It gets reset after each format action within the [document].
   Style toggledStyle = const Style();
 
+  /// [raw_editor_actions] handling of backspace event may need to force the style displayed in the toolbar
+  void forceToggledStyle(Style style) {
+    toggledStyle = style;
+    notifyListeners();
+  }
+
   bool ignoreFocusOnTextChange = false;
 
   /// Skip requestKeyboard being called in
@@ -285,19 +291,25 @@ class QuillController extends ChangeNotifier {
     }
 
     Delta? delta;
+    Style? style;
     if (len > 0 || data is! String || data.isNotEmpty) {
       delta = document.replace(index, len, data);
-      var shouldRetainDelta = toggledStyle.isNotEmpty &&
+
+      /// Remove block styles as they can only be attached to line endings
+      style = Style.attr(Map<String, Attribute>.fromEntries(toggledStyle
+          .attributes.entries
+          .where((a) => a.value.scope != AttributeScope.block)));
+      var shouldRetainDelta = style.isNotEmpty &&
           delta.isNotEmpty &&
           delta.length <= 2 &&
           delta.last.isInsert;
       if (shouldRetainDelta &&
-          toggledStyle.isNotEmpty &&
+          style.isNotEmpty &&
           delta.length == 2 &&
           delta.last.data == '\n') {
         // if all attributes are inline, shouldRetainDelta should be false
         final anyAttributeNotInline =
-            toggledStyle.values.any((attr) => !attr.isInline);
+            style.values.any((attr) => !attr.isInline);
         if (!anyAttributeNotInline) {
           shouldRetainDelta = false;
         }
@@ -305,7 +317,7 @@ class QuillController extends ChangeNotifier {
       if (shouldRetainDelta) {
         final retainDelta = Delta()
           ..retain(index)
-          ..retain(data is String ? data.length : 1, toggledStyle.toJson());
+          ..retain(data is String ? data.length : 1, style.toJson());
         document.compose(retainDelta, ChangeSource.local);
       }
     }

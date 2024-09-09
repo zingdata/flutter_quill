@@ -64,6 +64,7 @@ You can join our [Slack Group] for discussion.
     - [🛠️ Using the embed blocks from `flutter_quill_extensions`](#️-using-the-embed-blocks-from-flutter_quill_extensions)
     - [🔗 Links](#-links-2)
   - [🔄 Conversion to HTML](#-conversion-to-html)
+  - [📝 Spelling checker](#-spelling-checker)
   - [🌐 Translation](#-translation)
   - [🧪 Testing](#-testing)
   - [👥 Contributors](#-contributors)
@@ -207,7 +208,7 @@ _controller.document = Document.fromJson(json);
 
 ## ⚙️ Configurations
 
-The `QuillToolbar` and `QuillEditor` widgets let you customize a lot of things
+The `QuillSimpleToolbar` and `QuillEditor` widgets are both customizable.
 [Sample Page] provides sample code for advanced usage and configuration.
 
 ### 🔗 Links
@@ -281,6 +282,14 @@ The following packages can be used:
 2. [`flutter_quill_delta_from_html`](https://pub.dev/packages/flutter_quill_delta_from_html): To Convert **HTML** to **Delta**.
 3. [`flutter_quill_to_pdf`](https://pub.dev/packages/flutter_quill_to_pdf): To convert **Delta** To **PDF**.
 4. [`markdown_quill`](https://pub.dev/packages/markdown_quill): To convert **Markdown** To **Delta** and vice versa.
+
+## 📝 Spelling checker
+
+While spell-checking is not a feature that's implemented into the project, it can be used using external dependencies.
+
+It's implemented using the package `simple_spell_checker` in the [Example](./example/).
+
+Take a look at [Spelling Checker](./doc/spell_checker.md) page for more info.
 
 ## 🌐 Translation
 

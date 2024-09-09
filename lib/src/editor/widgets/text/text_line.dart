@@ -86,7 +86,7 @@ class _TextLineState extends State<TextLine> {
 
     // Desktop platforms (macOS, Linux, Windows):
     // only allow Meta (Control) + Click combinations
-    if (isDesktop(supportWeb: false)) {
+    if (isDesktopApp) {
       return _metaOrControlPressed;
     }
     // Mobile platforms (ios, android): always allow but we install a
@@ -391,10 +391,8 @@ class _TextLineState extends State<TextLine> {
     final nodeStyle = textNode.style;
     final isLink = nodeStyle.containsKey(Attribute.link.key) &&
         nodeStyle.attributes[Attribute.link.key]!.value != null;
-
     final style =
         _getInlineTextStyle(nodeStyle, defaultStyles, lineStyle, isLink);
-
     if (widget.controller.configurations.requireScriptFontFeatures == false &&
         textNode.value.isNotEmpty) {
       if (nodeStyle.containsKey(Attribute.script.key)) {
@@ -403,6 +401,22 @@ class _TextLineState extends State<TextLine> {
           return _scriptSpan(textNode.value, attr == Attribute.superscript,
               style, defaultStyles);
         }
+      }
+    }
+
+    if (!isLink &&
+        !widget.readOnly &&
+        !widget.line.style.attributes.containsKey('code-block') &&
+        !widget.line.style.attributes.containsKey('placeholder') &&
+        !kIsWeb) {
+      final service = SpellCheckerServiceProvider.instance;
+      final spellcheckedSpans = service.checkSpelling(textNode.value);
+      if (spellcheckedSpans != null && spellcheckedSpans.isNotEmpty) {
+        return TextSpan(
+          children: spellcheckedSpans,
+          style: style,
+          mouseCursor: null,
+        );
       }
     }
 
@@ -432,7 +446,7 @@ class _TextLineState extends State<TextLine> {
         if (k == Attribute.underline.key || k == Attribute.strikeThrough.key) {
           var textColor = defaultStyles.color;
           if (color?.value is String) {
-            textColor = stringToColor(color?.value, textColor);
+            textColor = stringToColor(color?.value, textColor, defaultStyles);
           }
           res = _merge(res.copyWith(decorationColor: textColor),
               s!.copyWith(decorationColor: textColor));
@@ -486,7 +500,7 @@ class _TextLineState extends State<TextLine> {
     if (color != null && color.value != null) {
       var textColor = defaultStyles.color;
       if (color.value is String) {
-        textColor = stringToColor(color.value);
+        textColor = stringToColor(color.value, null, defaultStyles);
       }
       if (textColor != null) {
         res = res.merge(TextStyle(color: textColor));
@@ -495,7 +509,8 @@ class _TextLineState extends State<TextLine> {
 
     final background = nodeStyle.attributes[Attribute.background.key];
     if (background != null && background.value != null) {
-      final backgroundColor = stringToColor(background.value);
+      final backgroundColor =
+          stringToColor(background.value, null, defaultStyles);
       res = res.merge(TextStyle(backgroundColor: backgroundColor));
     }
 
@@ -526,7 +541,7 @@ class _TextLineState extends State<TextLine> {
     }
 
     if (isLink && canLaunchLinks) {
-      if (isDesktop(supportWeb: true) || widget.readOnly) {
+      if (isDesktop || widget.readOnly) {
         _linkRecognizers[segment] = TapGestureRecognizer()
           ..onTap = () => _tapNodeLink(segment);
       } else {
@@ -1001,9 +1016,7 @@ class RenderEditableTextLine extends RenderEditableBox {
   /// of the cursor for iOS is approximate and obtained through an eyeball
   /// comparison.
   void _computeCaretPrototype() {
-    // If the cursor is taller only on iOS and not AppleOS then we should check
-    // only for iOS instead of AppleOS (macOS for example)
-    if (isIOS(supportWeb: true)) {
+    if (isIos) {
       _caretPrototype = Rect.fromLTWH(0, 0, cursorWidth, cursorHeight + 2);
     } else {
       _caretPrototype = Rect.fromLTWH(0, 2, cursorWidth, cursorHeight - 4.0);

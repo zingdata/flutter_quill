@@ -36,6 +36,7 @@ import '../../../editor/widgets/default_styles.dart';
 import '../../../editor/widgets/delegate.dart';
 import '../../../editor/widgets/link.dart';
 import '../../../toolbar/theme/quill_dialog_theme.dart';
+import '../builders/leading_block_builder.dart';
 
 @immutable
 class QuillRawEditorConfigurations extends Equatable {
@@ -71,6 +72,7 @@ class QuillRawEditorConfigurations extends Equatable {
     this.expands = false,
     this.isOnTapOutsideEnabled = true,
     this.enableMarkdownStyleConversion = true,
+    this.enableAlwaysIndentOnTab = false,
     this.onTapOutside,
     this.keyboardAppearance,
     this.enableInteractiveSelection = true,
@@ -92,6 +94,7 @@ class QuillRawEditorConfigurations extends Equatable {
     this.readOnlyMouseCursor = SystemMouseCursors.text,
     this.magnifierConfiguration,
     this.onPerformAction,
+    this.customLeadingBuilder,
   });
 
   /// Controls the document being edited.
@@ -103,11 +106,22 @@ class QuillRawEditorConfigurations extends Equatable {
   final ScrollController scrollController;
   final bool scrollable;
   final double scrollBottomInset;
+  final LeadingBlockNodeBuilder? customLeadingBuilder;
 
   /// Additional space around the editor contents.
   final EdgeInsetsGeometry padding;
 
   final bool enableMarkdownStyleConversion;
+
+  /// Enables always indenting when the TAB key is pressed.
+  ///
+  /// When set to true, pressing the TAB key will always insert an indentation
+  /// regardless of the context. If set to false, the TAB key will only indent
+  /// when the cursor is at the beginning of a list item. In other cases, it will
+  /// insert a tab character.
+  ///
+  /// Defaults to false. Must not be null.
+  final bool enableAlwaysIndentOnTab;
 
   /// Whether the text can be changed.
   ///

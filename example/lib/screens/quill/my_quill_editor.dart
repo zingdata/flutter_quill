@@ -1,11 +1,9 @@
 import 'dart:io' as io show Directory, File;
 
-import 'package:cached_network_image/cached_network_image.dart'
-    show CachedNetworkImageProvider;
+import 'package:cached_network_image/cached_network_image.dart' show CachedNetworkImageProvider;
 import 'package:desktop_drop/desktop_drop.dart' show DropTarget;
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/extensions.dart'
-    show isAndroid, isDesktop, isIOS, isWeb;
+import 'package:flutter_quill/extensions.dart' show isAndroid, isDesktop, isIOS, isWeb;
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 // ignore: implementation_imports
@@ -38,6 +36,7 @@ class MyQuillEditor extends StatelessWidget {
       focusNode: focusNode,
       controller: controller,
       configurations: configurations.copyWith(
+        readOnly: true,
         elementOptions: const QuillEditorElementOptions(
           codeBlock: QuillEditorCodeBlockElementOptions(
             enableLineNumbers: true,
@@ -69,8 +68,7 @@ class MyQuillEditor extends StatelessWidget {
             return null;
           }
           // We will save it to system temporary files
-          final newFileName =
-              'imageFile-${DateTime.now().toIso8601String()}.png';
+          final newFileName = 'imageFile-${DateTime.now().toIso8601String()}.png';
           final newPath = path.join(
             io.Directory.systemTemp.path,
             newFileName,
@@ -110,9 +108,7 @@ class MyQuillEditor extends StatelessWidget {
                       // only for Android, iOS and web
 
                       // We will use it only if image from network
-                      if (isAndroid(supportWeb: false) ||
-                          isIOS(supportWeb: false) ||
-                          isWeb()) {
+                      if (isAndroid(supportWeb: false) || isIOS(supportWeb: false) || isWeb()) {
                         if (isHttpBasedUrl(imageUrl)) {
                           return CachedNetworkImageProvider(
                             imageUrl,
@@ -123,9 +119,8 @@ class MyQuillEditor extends StatelessWidget {
                         imageUrl,
                         imageProviderBuilder: null,
                         context: context,
-                        assetsPrefix: QuillSharedExtensionsConfigurations.get(
-                                context: context)
-                            .assetsPrefix,
+                        assetsPrefix:
+                            QuillSharedExtensionsConfigurations.get(context: context).assetsPrefix,
                       );
                     },
                   ),

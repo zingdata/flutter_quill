@@ -26,6 +26,7 @@ class _SimpleScreenState extends State<SimpleScreen> {
               controller: _controller,
               configurations: const QuillEditorConfigurations(
                 padding: EdgeInsets.all(16),
+                readOnlyMouseCursor: SystemMouseCursors.none,
               ),
             ),
           ),

@@ -78,6 +78,7 @@ class EditableTextBlock extends StatelessWidget {
     required this.onCheckboxTap,
     required this.readOnly,
     required this.customRecognizerBuilder,
+    required this.composingRange,
     this.checkBoxReadOnly,
     this.onLaunchUrl,
     this.customStyleBuilder,
@@ -111,6 +112,7 @@ class EditableTextBlock extends StatelessWidget {
   final bool readOnly;
   final bool? checkBoxReadOnly;
   final List<String> customLinkPrefixes;
+  final TextRange composingRange;
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +195,7 @@ class EditableTextBlock extends StatelessWidget {
           onLaunchUrl: onLaunchUrl,
           customLinkPrefixes: customLinkPrefixes,
           customRecognizerBuilder: customRecognizerBuilder,
+          composingRange: composingRange,
         ),
         indentWidthBuilder(block, context, count, numberPointWidthBuilder),
         _getSpacingForLine(line, index, count, defaultStyles),
@@ -203,6 +206,7 @@ class EditableTextBlock extends StatelessWidget {
         hasFocus,
         MediaQuery.devicePixelRatioOf(context),
         cursorCont,
+        styles!.inlineCode!,
       );
       final nodeTextDirection = getDirectionOfNode(line, textDirection);
       children.add(

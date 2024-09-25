@@ -1,11 +1,10 @@
-import 'package:flutter/widgets.dart' show Color;
+import 'package:flutter/material.dart';
 
 import '../../base_toolbar.dart';
 import '../../structs/link_dialog_action.dart';
 import '../../theme/quill_dialog_theme.dart';
 
-class QuillToolbarLinkStyleButtonExtraOptions
-    extends QuillToolbarBaseButtonExtraOptions {
+class QuillToolbarLinkStyleButtonExtraOptions extends QuillToolbarBaseButtonExtraOptions {
   const QuillToolbarLinkStyleButtonExtraOptions({
     required super.controller,
     required super.context,
@@ -14,13 +13,13 @@ class QuillToolbarLinkStyleButtonExtraOptions
 }
 
 class QuillToolbarLinkStyleButtonOptions extends QuillToolbarBaseButtonOptions<
-    QuillToolbarLinkStyleButtonOptions,
-    QuillToolbarLinkStyleButtonExtraOptions> {
+    QuillToolbarLinkStyleButtonOptions, QuillToolbarLinkStyleButtonExtraOptions> {
   const QuillToolbarLinkStyleButtonOptions({
     this.dialogTheme,
     this.linkRegExp,
     this.linkDialogAction,
     this.dialogBarrierColor,
+    this.customLinkDialog,
     super.iconSize,
     super.iconButtonFactor,
     super.iconData,
@@ -35,4 +34,10 @@ class QuillToolbarLinkStyleButtonOptions extends QuillToolbarBaseButtonOptions<
   final RegExp? linkRegExp;
   final LinkDialogAction? linkDialogAction;
   final Color? dialogBarrierColor;
+  final Widget Function({
+    required String? link,
+    required String? text,
+    required RegExp? linkRegExp,
+    required LinkDialogAction? action,
+  })? customLinkDialog;
 }

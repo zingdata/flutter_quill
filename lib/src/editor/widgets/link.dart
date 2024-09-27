@@ -135,7 +135,9 @@ class QuillTextLink {
     }
     controller
       ..replaceText(index, length, text, null)
-      ..formatText(index, text.length, LinkAttribute(link));
+      ..formatText(index, text.length, LinkAttribute(link))
+    // moves cursor to the end of link
+    ..moveCursorToPosition(index + text.length);
   }
 
   static String? _getLinkAttributeValue(QuillController controller) {
@@ -147,8 +149,7 @@ class QuillTextLink {
   }
 }
 
-Future<LinkMenuAction> _showCupertinoLinkMenu(
-    BuildContext context, String link) async {
+Future<LinkMenuAction> _showCupertinoLinkMenu(BuildContext context, String link) async {
   final result = await showCupertinoModalPopup<LinkMenuAction>(
     context: context,
     builder: (ctx) {
@@ -216,8 +217,7 @@ class _CupertinoAction extends StatelessWidget {
   }
 }
 
-Future<LinkMenuAction> _showMaterialMenu(
-    BuildContext context, String link) async {
+Future<LinkMenuAction> _showMaterialMenu(BuildContext context, String link) async {
   final result = await showModalBottomSheet<LinkMenuAction>(
     context: context,
     builder: (ctx) {

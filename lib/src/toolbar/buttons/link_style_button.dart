@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../editor/widgets/link.dart';
-import '../../editor_toolbar_shared/quill_configurations_ext.dart';
 import '../../l10n/extensions/localizations_ext.dart';
-import '../../l10n/widgets/localizations.dart';
 import '../../rules/insert.dart';
 import '../base_button/base_value_button.dart';
-import '../base_toolbar.dart';
+
+import '../config/buttons/link_style_options.dart';
 import '../structs/link_dialog_action.dart';
 import '../theme/quill_dialog_theme.dart';
+import 'quill_icon_button.dart';
 
 typedef QuillToolbarLinkStyleBaseButton = QuillToolbarBaseButton<QuillToolbarLinkStyleButtonOptions,
     QuillToolbarLinkStyleButtonExtraOptions>;
@@ -21,6 +21,10 @@ class QuillToolbarLinkStyleButton extends QuillToolbarLinkStyleBaseButton {
   const QuillToolbarLinkStyleButton({
     required super.controller,
     super.options = const QuillToolbarLinkStyleButtonOptions(),
+
+    /// Shares common options between all buttons, prefer the [options]
+    /// over the [baseOptions].
+    super.baseOptions,
     super.key,
   });
 
@@ -60,21 +64,11 @@ class QuillToolbarLinkStyleButtonState extends QuillToolbarLinkStyleBaseButtonSt
   @override
   IconData get defaultIconData => Icons.link;
 
-  Color get dialogBarrierColor {
-    return options.dialogBarrierColor ??
-        context.quillSharedConfigurations?.dialogBarrierColor ??
-        Colors.black54;
-  }
-
-  RegExp? get linkRegExp {
-    return options.linkRegExp;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isToggled = QuillTextLink.isSelected(controller);
 
-    final childBuilder = options.childBuilder ?? baseButtonExtraOptions?.childBuilder;
+    final childBuilder = this.childBuilder;
     if (childBuilder != null) {
       return childBuilder(
         options,
@@ -93,9 +87,6 @@ class QuillToolbarLinkStyleButtonState extends QuillToolbarLinkStyleBaseButtonSt
       icon: Icon(
         iconData,
         size: iconSize * iconButtonFactor,
-        // color: isToggled
-        //     ? iconTheme?.iconSelectedFillColor
-        //     : iconTheme?.iconUnselectedFillColor,
       ),
       isSelected: isToggled,
       onPressed: () => _openLinkDialog(context),
@@ -109,23 +100,20 @@ class QuillToolbarLinkStyleButtonState extends QuillToolbarLinkStyleBaseButtonSt
 
     final textLink = await showDialog<QuillTextLink>(
       context: context,
-      barrierColor: dialogBarrierColor,
       builder: (_) {
-        return FlutterQuillLocalizationsWidget(
-          child: options.customLinkDialog != null
+        return options.customLinkDialog != null
               ? options.customLinkDialog!(
                   text: initialTextLink.text,
                   link: initialTextLink.link,
-                  linkRegExp: linkRegExp,
+                  linkRegExp: options.linkRegExp,
                   action: options.linkDialogAction,
                 )
-              : _LinkDialog(
-                  dialogTheme: options.dialogTheme,
-                  text: initialTextLink.text,
-                  link: initialTextLink.link,
-                  linkRegExp: linkRegExp,
-                  action: options.linkDialogAction,
-                ),
+              :  _LinkDialog(
+          dialogTheme: options.dialogTheme,
+          text: initialTextLink.text,
+          link: initialTextLink.link,
+          linkRegExp: options.linkRegExp,
+          action: options.linkDialogAction,
         );
       },
     );

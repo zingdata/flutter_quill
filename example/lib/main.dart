@@ -52,8 +52,7 @@ class _HomePageState extends State<HomePage> {
           }
           // Save the image somewhere and return the image URL that will be
           // stored in the Quill Delta JSON (the document).
-          final newFileName =
-              'image-file-${DateTime.now().toIso8601String()}.png';
+          final newFileName = 'image-file-${DateTime.now().toIso8601String()}.png';
           final newPath = path.join(
             io.Directory.systemTemp.path,
             newFileName,
@@ -86,9 +85,8 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.output),
             tooltip: 'Print Delta JSON to log',
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content:
-                      Text('The JSON Delta has been printed to the console.')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('The JSON Delta has been printed to the console.')));
               debugPrint(jsonEncode(_controller.document.toDelta().toJson()));
             },
           ),
@@ -147,6 +145,7 @@ class _HomePageState extends State<HomePage> {
                 controller: _controller,
                 config: QuillEditorConfig(
                   placeholder: 'Start writing your notes...',
+                  textInputAction: TextInputAction.go,
                   padding: const EdgeInsets.all(16),
                   embedBuilders: [
                     ...FlutterQuillEmbeds.editorBuilders(

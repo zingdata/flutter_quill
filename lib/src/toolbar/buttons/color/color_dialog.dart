@@ -42,13 +42,13 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
   @override
   void initState() {
     super.initState();
-    hexController =
-        TextEditingController(text: color_picker.colorToHex(selectedColor));
     if (widget.isToggledColor) {
       selectedColor = widget.isBackground
           ? hexToColor(widget.selectionStyle.attributes['background']?.value)
           : hexToColor(widget.selectionStyle.attributes['color']?.value);
     }
+    hexController =
+        TextEditingController(text: color_picker.colorToHex(selectedColor));
   }
 
   Timer debounce(

@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Modern Greek (`el`).
 class FlutterQuillLocalizationsEl extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsEl([String locale = 'el']) : super(locale);
+  FlutterQuillLocalizationsEl([super.locale = 'el']);
 
   @override
   String get pasteLink => 'Επικόλληση συνδέσμου';
@@ -238,11 +236,11 @@ class FlutterQuillLocalizationsEl extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'Εισαγάγετε κείμενο για τον σύνδεσμό σας (π.χ., \'Μάθετε περισσότερα\')';
+      "Εισαγάγετε κείμενο για τον σύνδεσμό σας (π.χ., 'Μάθετε περισσότερα')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'Εισαγάγετε το URL του συνδέσμου (π.χ., \'https://example.com\')';
+      "Εισαγάγετε το URL του συνδέσμου (π.χ., 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'Εισαγάγετε έγκυρο URL εικόνας';
@@ -309,4 +307,30 @@ class FlutterQuillLocalizationsEl extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }

@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Romanian Moldavian Moldovan (`ro`).
 class FlutterQuillLocalizationsRo extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsRo([String locale = 'ro']) : super(locale);
+  FlutterQuillLocalizationsRo([super.locale = 'ro']);
 
   @override
   String get pasteLink => 'Lipește un link';
@@ -238,11 +236,11 @@ class FlutterQuillLocalizationsRo extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'Vă rugăm să introduceți un text pentru link-ul dvs. (de exemplu, \'Aflați mai multe\')';
+      "Vă rugăm să introduceți un text pentru link-ul dvs. (de exemplu, 'Aflați mai multe')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'Vă rugăm să introduceți URL-ul link-ului (de exemplu, \'https://example.com\')';
+      "Vă rugăm să introduceți URL-ul link-ului (de exemplu, 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL =>
@@ -307,6 +305,32 @@ class FlutterQuillLocalizationsRo extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }
 
 /// The translations for Romanian Moldavian Moldovan, as used in Romania (`ro_RO`).
@@ -545,11 +569,11 @@ class FlutterQuillLocalizationsRoRo extends FlutterQuillLocalizationsRo {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'Vă rugăm să introduceți un text pentru link-ul dvs. (de exemplu, \'Aflați mai multe\')';
+      "Vă rugăm să introduceți un text pentru link-ul dvs. (de exemplu, 'Aflați mai multe')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'Vă rugăm să introduceți URL-ul link-ului (de exemplu, \'https://example.com\')';
+      "Vă rugăm să introduceți URL-ul link-ului (de exemplu, 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL =>

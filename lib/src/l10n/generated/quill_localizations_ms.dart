@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Malay (`ms`).
 class FlutterQuillLocalizationsMs extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsMs([String locale = 'ms']) : super(locale);
+  FlutterQuillLocalizationsMs([super.locale = 'ms']);
 
   @override
   String get pasteLink => 'Tampal Pautan';
@@ -238,11 +236,11 @@ class FlutterQuillLocalizationsMs extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'Sila masukkan teks untuk pautan anda (contoh, \'Ketahui lebih lanjut\')';
+      "Sila masukkan teks untuk pautan anda (contoh, 'Ketahui lebih lanjut')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'Sila masukkan URL pautan (contoh, \'https://example.com\')';
+      "Sila masukkan URL pautan (contoh, 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'Sila masukkan URL imej yang sah';
@@ -305,4 +303,30 @@ class FlutterQuillLocalizationsMs extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }

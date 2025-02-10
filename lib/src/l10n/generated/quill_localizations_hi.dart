@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Hindi (`hi`).
 class FlutterQuillLocalizationsHi extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsHi([String locale = 'hi']) : super(locale);
+  FlutterQuillLocalizationsHi([super.locale = 'hi']);
 
   @override
   String get pasteLink => 'लिंक पेस्ट करें';
@@ -239,11 +237,11 @@ class FlutterQuillLocalizationsHi extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'कृपया अपने लिंक के लिए एक पाठ दर्ज करें (उदाहरण: \'और अधिक जानें\')';
+      "कृपया अपने लिंक के लिए एक पाठ दर्ज करें (उदाहरण: 'और अधिक जानें')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'कृपया लिंक URL दर्ज करें (उदाहरण: \'https://example.com\')';
+      "कृपया लिंक URL दर्ज करें (उदाहरण: 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'कृपया एक वैध चित्र URL दर्ज करें';
@@ -307,4 +305,30 @@ class FlutterQuillLocalizationsHi extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }

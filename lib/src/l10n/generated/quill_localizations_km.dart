@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Khmer Central Khmer (`km`).
 class FlutterQuillLocalizationsKm extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsKm([String locale = 'km']) : super(locale);
+  FlutterQuillLocalizationsKm([super.locale = 'km']);
 
   @override
   String get pasteLink => 'បិទភ្ជាប់តំណ';
@@ -239,11 +237,11 @@ class FlutterQuillLocalizationsKm extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'សូមបញ្ចូលអត្ថបទសម្រាប់តំណរបស់អ្នក (ឧ. \'ស្វែងយល់បន្ថែម\')';
+      "សូមបញ្ចូលអត្ថបទសម្រាប់តំណរបស់អ្នក (ឧ. 'ស្វែងយល់បន្ថែម')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'សូមបញ្ចូល URL តំណ (ឧ. \'https://example.com\')';
+      "សូមបញ្ចូល URL តំណ (ឧ. 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'សូមបញ្ចូល URL រូបភាពដែលត្រឹមត្រូវ';
@@ -305,4 +303,30 @@ class FlutterQuillLocalizationsKm extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'បញ្ចូលវីដេអូ';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }

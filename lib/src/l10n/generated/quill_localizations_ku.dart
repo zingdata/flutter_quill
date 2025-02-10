@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Kurdish (`ku`).
 class FlutterQuillLocalizationsKu extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsKu([String locale = 'ku']) : super(locale);
+  FlutterQuillLocalizationsKu([super.locale = 'ku']);
 
   @override
   String get pasteLink => 'لینک دابنێ';
@@ -238,11 +236,11 @@ class FlutterQuillLocalizationsKu extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'تکایە دەقێک بۆ بەستەرەکەت دابنێ (بۆ نموونە، \'زیاتر بزانە\')';
+      "تکایە دەقێک بۆ بەستەرەکەت دابنێ (بۆ نموونە، 'زیاتر بزانە')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'تکایە لینکێک بۆ بەستەرەکە دابنێ (بۆ نموونە، \'https://example.com\')';
+      "تکایە لینکێک بۆ بەستەرەکە دابنێ (بۆ نموونە، 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'تکایە لینکی وێنەی دروست دابنێ';
@@ -305,6 +303,32 @@ class FlutterQuillLocalizationsKu extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }
 
 /// The translations for Kurdish (`ku_CKB`).
@@ -543,11 +567,11 @@ class FlutterQuillLocalizationsKuCkb extends FlutterQuillLocalizationsKu {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'تکایە دەقێک بۆ بەستەرەکەت دابنێ (بۆ نموونە، \'زیاتر بزانە\')';
+      "تکایە دەقێک بۆ بەستەرەکەت دابنێ (بۆ نموونە، 'زیاتر بزانە')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'تکایە لینکێک بۆ بەستەرەکە دابنێ (بۆ نموونە، \'https://example.com\')';
+      "تکایە لینکێک بۆ بەستەرەکە دابنێ (بۆ نموونە، 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'تکایە لینکی وێنەی دروست دابنێ';

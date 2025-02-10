@@ -6,7 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher_string.dart' show launchUrlString;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../flutter_quill.dart';
 import '../../../common/utils/color.dart';
@@ -612,7 +612,7 @@ class _TextLineState extends State<TextLine> {
   }
 
   Future<void> _launchUrl(String url) async {
-    await launchUrlString(url);
+    await launchUrl(Uri.parse(url));
   }
 
   void _tapNodeLink(Node node) {
@@ -984,10 +984,6 @@ class RenderEditableTextLine extends RenderEditableBox {
         _getBoxes(TextSelection(baseOffset: 0, extentOffset: line.length - 1))
             .where((element) => element.top < lineDy && element.bottom > lineDy)
             .toList(growable: false);
-    if (lineBoxes.isEmpty) {
-      // Empty line, line box is empty
-      return TextRange.collapsed(position.offset);
-    }
     return TextRange(
         start: getPositionForOffset(
           Offset(lineBoxes.first.left, lineDy),

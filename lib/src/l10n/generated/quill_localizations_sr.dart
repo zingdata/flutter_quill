@@ -1,10 +1,8 @@
 import 'quill_localizations.dart';
 
-// ignore_for_file: type=lint
-
 /// The translations for Serbian (`sr`).
 class FlutterQuillLocalizationsSr extends FlutterQuillLocalizations {
-  FlutterQuillLocalizationsSr([String locale = 'sr']) : super(locale);
+  FlutterQuillLocalizationsSr([super.locale = 'sr']);
 
   @override
   String get pasteLink => 'Nalepi vezu';
@@ -239,11 +237,11 @@ class FlutterQuillLocalizationsSr extends FlutterQuillLocalizations {
 
   @override
   String get pleaseEnterTextForYourLink =>
-      'Unesite tekst za svoj link (na primer, \'Saznajte više\')';
+      "Unesite tekst za svoj link (na primer, 'Saznajte više')";
 
   @override
   String get pleaseEnterTheLinkURL =>
-      'Unesite URL linka (na primer, \'https://example.com\')';
+      "Unesite URL linka (na primer, 'https://example.com')";
 
   @override
   String get pleaseEnterAValidImageURL => 'Unesite važeći URL slike';
@@ -306,4 +304,30 @@ class FlutterQuillLocalizationsSr extends FlutterQuillLocalizations {
 
   @override
   String get insertVideo => 'Insert video';
+
+  @override
+  String get errorUnexpectedSavingImage =>
+      'An unexpected error occurred while saving the image. Please try again.';
+
+  @override
+  String get successImageSavedGallery => 'Image saved to your gallery.';
+
+  @override
+  String get successImageSaved => 'Image saved successfully.';
+
+  @override
+  String get successImageDownloaded => 'Image downloaded successfully.';
+
+  @override
+  String get openGallery => 'Open Gallery';
+
+  @override
+  String get openFileLocation => 'Open File Location';
+
+  @override
+  String get openFile => 'Open File';
+
+  @override
+  String get saveImagePermissionDenied =>
+      'Couldn’t save the image due to missing permission';
 }

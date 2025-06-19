@@ -6,7 +6,7 @@ import 'dart:ui' as ui hide TextStyle;
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderAbstractViewport;
+import 'package:flutter/rendering.dart' show RevealedOffset;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility_temp_fork/flutter_keyboard_visibility_temp_fork.dart'
@@ -93,6 +93,57 @@ class QuillRawEditorState extends EditorState
   @override
   bool get dirty => _dirty;
   bool _dirty = false;
+
+  // Completely copied from flutter with some changes to fit flutter_quill:
+  // https://github.com/flutter/flutter/blob/3.29.0/packages/flutter/lib/src/widgets/editable_text.dart#L3741
+  // Finds the closest scroll offset to the current scroll offset that fully
+  // reveals the given caret rect. If the given rect's main axis extent is too
+  // large to be fully revealed in `renderEditable`, it will be centered along
+  // the main axis.
+  //
+  // If this is a multiline EditableText (which means the Editable can only
+  // scroll vertically), the given rect's height will first be extended to match
+  // `renderEditable.preferredLineHeight`, before the target scroll offset is
+  // calculated.
+  RevealedOffset _getOffsetToRevealCaret(Rect rect) {
+    if (!_scrollController.position.allowImplicitScrolling) {
+      return RevealedOffset(offset: _scrollController.offset, rect: rect);
+    }
+
+    final editableSize = renderEditor.size;
+    final double additionalOffset;
+    final Offset unitOffset;
+
+    // The caret is vertically centered within the line. Expand the caret's
+    // height so that it spans the line because we're going to ensure that the
+    // entire expanded caret is scrolled into view.
+    final expandedRect = Rect.fromCenter(
+      center: rect.center,
+      width: rect.width,
+      height: math.max(
+        rect.height,
+        renderEditor.preferredLineHeight(renderEditor.caretTextPosition),
+      ),
+    );
+
+    additionalOffset = expandedRect.height >= editableSize.height
+        ? editableSize.height / 2 - expandedRect.center.dy
+        : ui.clampDouble(
+            0, expandedRect.bottom - editableSize.height, expandedRect.top);
+    unitOffset = const Offset(0, 1);
+
+    // No overscrolling when encountering tall fonts/scripts that extend past
+    // the ascent.
+    final targetOffset = ui.clampDouble(
+      additionalOffset + _scrollController.offset,
+      _scrollController.position.minScrollExtent,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    final offsetDelta = _scrollController.offset - targetOffset;
+    return RevealedOffset(
+        rect: rect.shift(unitOffset * offsetDelta), offset: targetOffset);
+  }
 
   @override
   void insertContent(KeyboardInsertedContent content) {
@@ -537,7 +588,6 @@ class QuillRawEditorState extends EditorState
     final requestKeyboardFocusOnCheckListChanged =
         widget.config.requestKeyboardFocusOnCheckListChanged;
     if (!(widget.config.checkBoxReadOnly ?? widget.config.readOnly)) {
-      _disableScrollControllerAnimateOnce = true;
       final currentSelection = controller.selection.copyWith();
       final attribute = value ? Attribute.checked : Attribute.unchecked;
 
@@ -586,7 +636,8 @@ class QuillRawEditorState extends EditorState
       prevNodeOl = attrs[Attribute.list.key] == Attribute.ol;
       final nodeTextDirection = getDirectionOfNode(node, _textDirection);
       if (node is Line) {
-        final editableTextLine = _getEditableTextLineFromNode(node, context);
+        final editableTextLine =
+            _getEditableTextLineFromNode(node, context, attrs);
         result.add(Directionality(
             textDirection: nodeTextDirection, child: editableTextLine));
       } else if (node is Block) {
@@ -607,6 +658,7 @@ class QuillRawEditorState extends EditorState
               ? const EdgeInsets.all(16)
               : null,
           embedBuilder: widget.config.embedBuilder,
+          textSpanBuilder: widget.config.textSpanBuilder,
           linkActionPicker: _linkActionPicker,
           onLaunchUrl: widget.config.onLaunchUrl,
           cursorCont: _cursorCont,
@@ -638,11 +690,12 @@ class QuillRawEditorState extends EditorState
   }
 
   EditableTextLine _getEditableTextLineFromNode(
-      Line node, BuildContext context) {
+      Line node, BuildContext context, Map<String, Attribute<dynamic>> attrs) {
     final textLine = TextLine(
       line: node,
       textDirection: _textDirection,
       embedBuilder: widget.config.embedBuilder,
+      textSpanBuilder: widget.config.textSpanBuilder,
       customStyleBuilder: widget.config.customStyleBuilder,
       customRecognizerBuilder: widget.config.customRecognizerBuilder,
       styles: _styles!,
@@ -666,7 +719,8 @@ class QuillRawEditorState extends EditorState
         _hasFocus,
         MediaQuery.devicePixelRatioOf(context),
         _cursorCont,
-        _styles!.inlineCode!);
+        _styles!.inlineCode!,
+        _getDecoration(node, _styles, attrs));
     return editableTextLine;
   }
 
@@ -770,6 +824,30 @@ class QuillRawEditorState extends EditorState
     return VerticalSpacing.zero;
   }
 
+  BoxDecoration? _getDecoration(Node node, DefaultStyles? defaultStyles,
+      Map<String, Attribute<dynamic>> attrs) {
+    if (attrs.containsKey(Attribute.header.key)) {
+      final level = attrs[Attribute.header.key]!.value;
+      switch (level) {
+        case 1:
+          return defaultStyles!.h1!.decoration;
+        case 2:
+          return defaultStyles!.h2!.decoration;
+        case 3:
+          return defaultStyles!.h3!.decoration;
+        case 4:
+          return defaultStyles!.h4!.decoration;
+        case 5:
+          return defaultStyles!.h5!.decoration;
+        case 6:
+          return defaultStyles!.h6!.decoration;
+        default:
+          throw ArgumentError('Invalid level $level');
+      }
+    }
+    return null;
+  }
+
   void _didChangeTextEditingValueListener() {
     _didChangeTextEditingValue(controller.ignoreFocusOnTextChange);
   }
@@ -786,8 +864,6 @@ class QuillRawEditorState extends EditorState
       _clipboardStatus!.addListener(_onChangedClipboardStatus);
     }
 
-    controller.addListener(_didChangeTextEditingValueListener);
-
     _scrollController = widget.config.scrollController;
     _scrollController.addListener(_updateSelectionOverlayForScroll);
 
@@ -800,9 +876,6 @@ class QuillRawEditorState extends EditorState
     // Floating cursor
     _floatingCursorResetController = AnimationController(vsync: this);
     _floatingCursorResetController.addListener(onFloatingCursorResetTick);
-
-    // listen to composing range changes
-    composingRange.addListener(_onComposingRangeChanged);
 
     if (isKeyboardOS) {
       _keyboardVisible = true;
@@ -830,8 +903,14 @@ class QuillRawEditorState extends EditorState
       });
     }
 
-    // Focus
-    widget.config.focusNode.addListener(_handleFocusChanged);
+    controller.addListener(_didChangeTextEditingValueListener);
+
+    if (!widget.config.readOnly) {
+      // listen to composing range changes
+      composingRange.addListener(_onComposingRangeChanged);
+      // Focus
+      widget.config.focusNode.addListener(_handleFocusChanged);
+    }
   }
 
   // KeyboardVisibilityController only checks for keyboards that
@@ -938,9 +1017,11 @@ class QuillRawEditorState extends EditorState
     _selectionOverlay?.dispose();
     _selectionOverlay = null;
     controller.removeListener(_didChangeTextEditingValueListener);
-    widget.config.focusNode.removeListener(_handleFocusChanged);
+    if (!widget.config.readOnly) {
+      widget.config.focusNode.removeListener(_handleFocusChanged);
+      composingRange.removeListener(_onComposingRangeChanged);
+    }
     _cursorCont.dispose();
-    composingRange.removeListener(_onComposingRangeChanged);
     if (_clipboardStatus != null) {
       _clipboardStatus!
         ..removeListener(_onChangedClipboardStatus)
@@ -995,12 +1076,35 @@ class QuillRawEditorState extends EditorState
         .stopCurrentVerticalRunIfSelectionChanges();
   }
 
+  late double _lastBottomViewInset;
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted) {
+      return;
+    }
+
+    // https://github.com/flutter/flutter/blob/3.29.0/packages/flutter/lib/src/widgets/editable_text.dart#L4311
+    final view = View.of(context);
+    if (_lastBottomViewInset != view.viewInsets.bottom) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _selectionOverlay?.updateForScroll();
+      }, debugLabel: 'EditableText.updateForScroll');
+      if (_lastBottomViewInset < view.viewInsets.bottom) {
+        // Because the metrics change signal from engine will come here every frame
+        // (on both iOS and Android). So we don't need to show caret with animation.
+        _scheduleShowCaretOnScreen(withAnimation: false);
+      }
+    }
+    _lastBottomViewInset = view.viewInsets.bottom;
+  }
+
   void _onChangeTextEditingValue([bool ignoreCaret = false]) {
     updateRemoteValueIfNeeded();
     if (ignoreCaret) {
       return;
     }
-    _showCaretOnScreen();
+    _scheduleShowCaretOnScreen(withAnimation: true);
     _cursorCont.startOrStopCursorTimerIfNeeded(_hasFocus, controller.selection);
     if (hasConnection) {
       // To keep the cursor from blinking while typing, we want to restart the
@@ -1051,6 +1155,7 @@ class QuillRawEditorState extends EditorState
         contextMenuBuilder: widget.config.contextMenuBuilder == null
             ? null
             : (context) => widget.config.contextMenuBuilder!(context, this),
+        dragOffsetNotifier: widget.dragOffsetNotifier,
       );
       _selectionOverlay!.handlesVisible = _shouldShowSelectionHandles();
       _selectionOverlay!.showHandles();
@@ -1069,7 +1174,8 @@ class QuillRawEditorState extends EditorState
     _updateOrDisposeSelectionOverlayIfNeeded();
     if (_hasFocus) {
       WidgetsBinding.instance.addObserver(this);
-      _showCaretOnScreen();
+      _lastBottomViewInset = View.of(context).viewInsets.bottom;
+      _scheduleShowCaretOnScreen(withAnimation: true);
     } else {
       WidgetsBinding.instance.removeObserver(this);
     }
@@ -1088,53 +1194,104 @@ class QuillRawEditorState extends EditorState
     return widget.config.linkActionPickerDelegate(context, link, linkNode);
   }
 
+  // Animation configuration for scrolling the caret back on screen.
+  static const Duration _caretAnimationDuration = Duration(milliseconds: 100);
+  static const Curve _caretAnimationCurve = Curves.fastOutSlowIn;
+
   bool _showCaretOnScreenScheduled = false;
 
-  // This is a workaround for checkbox tapping issue
-  // https://github.com/singerdmx/flutter-quill/issues/619
-  // We cannot treat {"list": "checked"} and {"list": "unchecked"} as
-  // block of the same style
-  // This causes controller.selection to go to offset 0
-  bool _disableScrollControllerAnimateOnce = false;
-
-  void _showCaretOnScreen() {
-    if (!widget.config.showCursor || _showCaretOnScreenScheduled) {
+  // Completely copied from flutter with some changes to fit flutter_quill:
+  // https://github.com/flutter/flutter/blob/3.29.0/packages/flutter/lib/src/widgets/editable_text.dart#L4228
+  void _scheduleShowCaretOnScreen({required bool withAnimation}) {
+    if (_showCaretOnScreenScheduled) {
       return;
     }
-
     _showCaretOnScreenScheduled = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (widget.config.scrollable || _scrollController.hasClients) {
-        _showCaretOnScreenScheduled = false;
+      _showCaretOnScreenScheduled = false;
+      // Since we are in a post frame callback, check currentContext in case
+      // RenderEditable has been disposed (in which case it will be null).
+      final renderEditor =
+          _editorKey.currentContext?.findRenderObject() as RenderEditor?;
+      if (renderEditor == null ||
+          !renderEditor.selection.isValid ||
+          !_scrollController.hasClients) {
+        return;
+      }
 
-        if (!mounted) {
-          return;
-        }
+      final lineHeight =
+          renderEditor.preferredLineHeight(renderEditor.caretTextPosition);
 
-        final viewport = RenderAbstractViewport.of(renderEditor);
-        final editorOffset =
-            renderEditor.localToGlobal(const Offset(0, 0), ancestor: viewport);
-        final offsetInViewport = _scrollController.offset + editorOffset.dy;
+      // Enlarge the target rect by scrollPadding to ensure that caret is not
+      // positioned directly at the edge after scrolling.
+      var bottomSpacing = widget.config.padding.bottom;
+      if (_selectionOverlay?.selectionCtrls != null) {
+        final handleHeight =
+            _selectionOverlay!.selectionCtrls.getHandleSize(lineHeight).height;
 
-        final offset = renderEditor.getOffsetToRevealCursor(
-          _scrollController.position.viewportDimension,
-          _scrollController.offset,
-          offsetInViewport,
+        final double interactiveHandleHeight = math.max(
+          handleHeight,
+          kMinInteractiveDimension,
         );
 
-        if (offset != null) {
-          if (_disableScrollControllerAnimateOnce) {
-            _disableScrollControllerAnimateOnce = false;
-            return;
-          }
-          _scrollController.animateTo(
-            math.min(offset, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastOutSlowIn,
-          );
-        }
+        final anchor = _selectionOverlay!.selectionCtrls.getHandleAnchor(
+          TextSelectionHandleType.collapsed,
+          lineHeight,
+        );
+
+        final handleCenter = handleHeight / 2 - anchor.dy;
+        bottomSpacing = math.max(
+          handleCenter + interactiveHandleHeight / 2,
+          bottomSpacing,
+        );
       }
-    });
+
+      final caretPadding =
+          widget.config.padding.copyWith(bottom: bottomSpacing);
+
+      final caretRect =
+          renderEditor.getLocalRectForCaret(renderEditor.caretTextPosition);
+      final targetOffset = _getOffsetToRevealCaret(caretRect);
+
+      Rect? rectToReveal;
+      final selection = textEditingValue.selection;
+      if (selection.isCollapsed) {
+        rectToReveal = targetOffset.rect;
+      } else {
+        // TODO: I'm not sure how to get getBoxesForSelection in flutter_quill or do we even has it?
+        // Currently just return targetOffset.rect.
+        //
+        // final List<TextBox> selectionBoxes =
+        //     renderEditor.getBoxesForSelection(selection);
+        // // selectionBoxes may be empty if, for example, the selection does not
+        // // encompass a full character, like if it only contained part of an
+        // // extended grapheme cluster.
+        // if (selectionBoxes.isEmpty) {
+        //   rectToReveal = targetOffset.rect;
+        // } else {
+        //   rectToReveal = selection.baseOffset < selection.extentOffset
+        //       ? selectionBoxes.last.toRect()
+        //       : selectionBoxes.first.toRect();
+        // }
+        rectToReveal = targetOffset.rect;
+      }
+
+      if (withAnimation) {
+        _scrollController.animateTo(
+          targetOffset.offset,
+          duration: _caretAnimationDuration,
+          curve: _caretAnimationCurve,
+        );
+        renderEditor.showOnScreen(
+          rect: caretPadding.inflateRect(rectToReveal),
+          duration: _caretAnimationDuration,
+          curve: _caretAnimationCurve,
+        );
+      } else {
+        _scrollController.jumpTo(targetOffset.offset);
+        renderEditor.showOnScreen(rect: caretPadding.inflateRect(rectToReveal));
+      }
+    }, debugLabel: 'EditableText.showCaret');
   }
 
   /// The renderer for this widget's editor descendant.
@@ -1164,10 +1321,10 @@ class QuillRawEditorState extends EditorState
         /// delay 500 milliseconds for waiting keyboard show up
         Future.delayed(
           const Duration(milliseconds: 500),
-          _showCaretOnScreen,
+          () => _scheduleShowCaretOnScreen(withAnimation: true),
         );
       } else {
-        _showCaretOnScreen();
+        _scheduleShowCaretOnScreen(withAnimation: true);
       }
     } else {
       widget.config.focusNode.requestFocus();

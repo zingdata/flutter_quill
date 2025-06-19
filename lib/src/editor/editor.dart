@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../common/utils/platform.dart';
@@ -191,21 +192,26 @@ class QuillEditorState extends State<QuillEditor>
 
   QuillController get controller => widget.controller;
 
+  @Deprecated('Use config instead')
   QuillEditorConfig get configurations => widget.config;
+  QuillEditorConfig get config => widget.config;
+
+  /// {@macro drag_offset_notifier}
+  final dragOffsetNotifier = isMobileApp ? ValueNotifier<Offset?>(null) : null;
 
   @override
   void initState() {
     super.initState();
-    _editorKey = configurations.editorKey ?? GlobalKey<EditorState>();
+    _editorKey = config.editorKey ?? GlobalKey<EditorState>();
     _selectionGestureDetectorBuilder =
         _QuillEditorSelectionGestureDetectorBuilder(
       this,
-      configurations.detectWordBoundary,
+      config.detectWordBoundary,
     );
 
     final focusNode = widget.focusNode;
 
-    if (configurations.autoFocus) {
+    if (config.autoFocus) {
       focusNode.requestFocus();
     }
 
@@ -221,7 +227,7 @@ class QuillEditorState extends State<QuillEditor>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectionTheme =
-        configurations.textSelectionThemeData ?? TextSelectionTheme.of(context);
+        config.textSelectionThemeData ?? TextSelectionTheme.of(context);
 
     TextSelectionControls textSelectionControls;
     bool paintCursorAboveText;
@@ -251,12 +257,13 @@ class QuillEditorState extends State<QuillEditor>
           theme.colorScheme.primary.withValues(alpha: 0.40);
     }
 
-    final showSelectionToolbar = configurations.enableInteractiveSelection &&
-        configurations.enableSelectionToolbar;
+    final showSelectionToolbar =
+        config.enableInteractiveSelection && config.enableSelectionToolbar;
 
     final child = QuillRawEditor(
       key: _editorKey,
       controller: controller,
+      dragOffsetNotifier: dragOffsetNotifier,
       config: QuillRawEditorConfig(
         characterShortcutEvents: widget.config.characterShortcutEvents,
         spaceShortcutEvents: widget.config.spaceShortcutEvents,
@@ -264,71 +271,72 @@ class QuillEditorState extends State<QuillEditor>
         customLeadingBuilder: widget.config.customLeadingBlockBuilder,
         focusNode: widget.focusNode,
         scrollController: widget.scrollController,
-        scrollable: configurations.scrollable,
-        enableAlwaysIndentOnTab: configurations.enableAlwaysIndentOnTab,
-        scrollBottomInset: configurations.scrollBottomInset,
-        padding: configurations.padding,
+        scrollable: config.scrollable,
+        enableAlwaysIndentOnTab: config.enableAlwaysIndentOnTab,
+        scrollBottomInset: config.scrollBottomInset,
+        padding: config.padding,
         readOnly: controller.readOnly,
-        checkBoxReadOnly: configurations.checkBoxReadOnly,
-        disableClipboard: configurations.disableClipboard,
-        placeholder: configurations.placeholder,
-        onLaunchUrl: configurations.onLaunchUrl,
+        checkBoxReadOnly: config.checkBoxReadOnly,
+        disableClipboard: config.disableClipboard,
+        placeholder: config.placeholder,
+        onLaunchUrl: config.onLaunchUrl,
         contextMenuBuilder: showSelectionToolbar
-            ? (configurations.contextMenuBuilder ??
+            ? (config.contextMenuBuilder ??
                 QuillRawEditorConfig.defaultContextMenuBuilder)
             : null,
         showSelectionHandles: isMobile,
-        showCursor: configurations.showCursor ?? true,
+        showCursor: config.showCursor ?? true,
         cursorStyle: CursorStyle(
           color: cursorColor,
           backgroundColor: Colors.grey,
           width: 2,
           radius: cursorRadius,
           offset: cursorOffset,
-          paintAboveText:
-              configurations.paintCursorAboveText ?? paintCursorAboveText,
+          paintAboveText: config.paintCursorAboveText ?? paintCursorAboveText,
           opacityAnimates: cursorOpacityAnimates,
         ),
-        textCapitalization: configurations.textCapitalization,
-        minHeight: configurations.minHeight,
-        maxHeight: configurations.maxHeight,
-        maxContentWidth: configurations.maxContentWidth,
-        customStyles: configurations.customStyles,
-        expands: configurations.expands,
-        autoFocus: configurations.autoFocus,
+        textCapitalization: config.textCapitalization,
+        minHeight: config.minHeight,
+        maxHeight: config.maxHeight,
+        maxContentWidth: config.maxContentWidth,
+        customStyles: config.customStyles,
+        expands: config.expands,
+        autoFocus: config.autoFocus,
         selectionColor: selectionColor,
-        selectionCtrls:
-            configurations.textSelectionControls ?? textSelectionControls,
-        keyboardAppearance: configurations.keyboardAppearance,
-        enableInteractiveSelection: configurations.enableInteractiveSelection,
-        scrollPhysics: configurations.scrollPhysics,
+        selectionCtrls: config.textSelectionControls ?? textSelectionControls,
+        keyboardAppearance: config.keyboardAppearance,
+        enableInteractiveSelection: config.enableInteractiveSelection,
+        scrollPhysics: config.scrollPhysics,
         embedBuilder: _getEmbedBuilder,
-        linkActionPickerDelegate: configurations.linkActionPickerDelegate,
-        customStyleBuilder: configurations.customStyleBuilder,
-        customRecognizerBuilder: configurations.customRecognizerBuilder,
-        floatingCursorDisabled: configurations.floatingCursorDisabled,
-        customShortcuts: configurations.customShortcuts,
-        customActions: configurations.customActions,
-        customLinkPrefixes: configurations.customLinkPrefixes,
-        onTapOutsideEnabled: configurations.onTapOutsideEnabled,
-        onTapOutside: configurations.onTapOutside,
-        dialogTheme: configurations.dialogTheme,
-        contentInsertionConfiguration:
-            configurations.contentInsertionConfiguration,
-        enableScribble: configurations.enableScribble,
-        onScribbleActivated: configurations.onScribbleActivated,
-        scribbleAreaInsets: configurations.scribbleAreaInsets,
-        readOnlyMouseCursor: configurations.readOnlyMouseCursor,
-        textInputAction: configurations.textInputAction,
-        onPerformAction: configurations.onPerformAction,
+        textSpanBuilder: config.textSpanBuilder,
+        quillMagnifierBuilder: config.quillMagnifierBuilder,
+        linkActionPickerDelegate: config.linkActionPickerDelegate,
+        customStyleBuilder: config.customStyleBuilder,
+        customRecognizerBuilder: config.customRecognizerBuilder,
+        floatingCursorDisabled: config.floatingCursorDisabled,
+        customShortcuts: config.customShortcuts,
+        customActions: config.customActions,
+        customLinkPrefixes: config.customLinkPrefixes,
+        onTapOutsideEnabled: config.onTapOutsideEnabled,
+        onTapOutside: config.onTapOutside,
+        dialogTheme: config.dialogTheme,
+        contentInsertionConfiguration: config.contentInsertionConfiguration,
+        enableScribble: config.enableScribble,
+        onScribbleActivated: config.onScribbleActivated,
+        scribbleAreaInsets: config.scribbleAreaInsets,
+        readOnlyMouseCursor: config.readOnlyMouseCursor,
+        textInputAction: config.textInputAction,
+        onPerformAction: config.onPerformAction,
       ),
     );
 
     final editor = selectionEnabled
         ? _selectionGestureDetectorBuilder.build(
             behavior: HitTestBehavior.translucent,
-            detectWordBoundary: configurations.detectWordBoundary,
+            detectWordBoundary: config.detectWordBoundary,
             child: child,
+            dragOffsetNotifier: dragOffsetNotifier,
+            quillMagnifierBuilder: config.quillMagnifierBuilder,
           )
         : child;
 
@@ -350,7 +358,7 @@ class QuillEditorState extends State<QuillEditor>
   }
 
   EmbedBuilder _getEmbedBuilder(Embed node) {
-    final builders = configurations.embedBuilders;
+    final builders = config.embedBuilders;
 
     if (builders != null) {
       for (final builder in builders) {
@@ -360,7 +368,7 @@ class QuillEditorState extends State<QuillEditor>
       }
     }
 
-    final unknownEmbedBuilder = configurations.unknownEmbedBuilder;
+    final unknownEmbedBuilder = config.unknownEmbedBuilder;
     if (unknownEmbedBuilder != null) {
       return unknownEmbedBuilder;
     }
@@ -380,7 +388,7 @@ class QuillEditorState extends State<QuillEditor>
   bool get forcePressEnabled => false;
 
   @override
-  bool get selectionEnabled => configurations.enableInteractiveSelection;
+  bool get selectionEnabled => config.enableInteractiveSelection;
 
   /// Throws [StateError] if [_editorKey] is not connected to [QuillRawEditor] correctly.
   ///
@@ -421,9 +429,9 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    if (_state.configurations.onSingleLongTapMoveUpdate != null) {
+    if (_state.config.onSingleLongTapMoveUpdate != null) {
       if (renderEditor != null &&
-          _state.configurations.onSingleLongTapMoveUpdate!(
+          _state.config.onSingleLongTapMoveUpdate!(
             details,
             renderEditor!.getPositionForOffset,
           )) {
@@ -472,9 +480,9 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onTapDown(TapDownDetails details) {
-    if (_state.configurations.onTapDown != null) {
+    if (_state.config.onTapDown != null) {
       if (renderEditor != null &&
-          _state.configurations.onTapDown!(
+          _state.config.onTapDown!(
             details,
             renderEditor!.getPositionForOffset,
           )) {
@@ -493,9 +501,9 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onSingleTapUp(TapUpDetails details) {
-    if (_state.configurations.onTapUp != null &&
+    if (_state.config.onTapUp != null &&
         renderEditor != null &&
-        _state.configurations.onTapUp!(
+        _state.config.onTapUp!(
           details,
           renderEditor!.getPositionForOffset,
         )) {
@@ -556,11 +564,34 @@ class _QuillEditorSelectionGestureDetectorBuilder
     }
   }
 
+  /// onSingleTapUp for mouse right click
+  @override
+  void onSecondarySingleTapUp(TapUpDetails details) {
+    if (delegate.selectionEnabled &&
+        renderEditor != null &&
+        renderEditor!.selection.isCollapsed) {
+      renderEditor!.selectPositionAt(
+        from: details.globalPosition,
+        cause: SelectionChangedCause.longPress,
+      );
+    }
+
+    if (renderEditor?._hasFocus == false) {
+      _state._requestKeyboard();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        super.onSecondarySingleTapUp(details);
+      });
+      SchedulerBinding.instance.scheduleFrame();
+    } else {
+      super.onSecondarySingleTapUp(details);
+    }
+  }
+
   @override
   void onSingleLongTapStart(LongPressStartDetails details) {
-    if (_state.configurations.onSingleLongTapStart != null) {
+    if (_state.config.onSingleLongTapStart != null) {
       if (renderEditor != null &&
-          _state.configurations.onSingleLongTapStart!(
+          _state.config.onSingleLongTapStart!(
             details,
             renderEditor!.getPositionForOffset,
           )) {
@@ -583,9 +614,9 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onSingleLongTapEnd(LongPressEndDetails details) {
-    if (_state.configurations.onSingleLongTapEnd != null) {
+    if (_state.config.onSingleLongTapEnd != null) {
       if (renderEditor != null) {
-        if (_state.configurations.onSingleLongTapEnd!(
+        if (_state.config.onSingleLongTapEnd!(
           details,
           renderEditor!.getPositionForOffset,
         )) {
@@ -1191,71 +1222,6 @@ class RenderEditor extends RenderEditableContainerBox
     );
   }
 
-  /// Returns the y-offset of the editor at which [selection] is visible.
-  ///
-  /// The offset is the distance from the top of the editor and is the minimum
-  /// from the current scroll position until [selection] becomes visible.
-  /// Returns null if [selection] is already visible.
-  ///
-  /// Finds the closest scroll offset that fully reveals the editing cursor.
-  ///
-  /// The `scrollOffset` parameter represents current scroll offset in the
-  /// parent viewport.
-  ///
-  /// The `offsetInViewport` parameter represents the editor's vertical offset
-  /// in the parent viewport. This value should normally be 0.0 if this editor
-  /// is the only child of the viewport or if it's the topmost child. Otherwise
-  /// it should be a positive value equal to total height of all siblings of
-  /// this editor from above it.
-  ///
-  /// Returns `null` if the cursor is currently visible.
-  double? getOffsetToRevealCursor(
-      double viewportHeight, double scrollOffset, double offsetInViewport) {
-    // Endpoints coordinates represents lower left or lower right corner of
-    // the selection. If we want to scroll up to reveal the caret we need to
-    // adjust the dy value by the height of the line. We also add a small margin
-    // so that the caret is not too close to the edge of the viewport.
-    final endpoints = getEndpointsForSelection(selection);
-
-    // when we drag the right handle, we should get the last point
-    TextSelectionPoint endpoint;
-    if (selection.isCollapsed) {
-      endpoint = endpoints.first;
-    } else {
-      if (selection is DragTextSelection) {
-        endpoint = (selection as DragTextSelection).first
-            ? endpoints.first
-            : endpoints.last;
-      } else {
-        endpoint = endpoints.first;
-      }
-    }
-
-    // Collapsed selection => caret
-    final child = childAtPosition(selection.extent);
-    const kMargin = 8.0;
-
-    final caretTop = endpoint.point.dy -
-        child.preferredLineHeight(TextPosition(
-            offset: selection.extentOffset - child.container.documentOffset)) -
-        kMargin +
-        offsetInViewport +
-        scrollBottomInset;
-    final caretBottom =
-        endpoint.point.dy + kMargin + offsetInViewport + scrollBottomInset;
-    double? dy;
-    if (caretTop < scrollOffset) {
-      dy = caretTop;
-    } else if (caretBottom > scrollOffset + viewportHeight) {
-      dy = caretBottom - viewportHeight;
-    }
-    if (dy == null) {
-      return null;
-    }
-    // Clamping to 0.0 so that the content does not jump unnecessarily.
-    return math.max(dy, 0);
-  }
-
   @override
   Rect getLocalRectForCaret(TextPosition position) {
     final targetChild = childAtPosition(position);
@@ -1266,6 +1232,10 @@ class RenderEditor extends RenderEditableContainerBox
     final boxParentData = targetChild.parentData as BoxParentData;
     return childLocalRect.shift(Offset(0, boxParentData.offset.dy));
   }
+
+  TextPosition get caretTextPosition => _floatingCursorRect == null
+      ? selection.extent
+      : _floatingCursorTextPosition;
 
   // Start floating cursor
 
@@ -1295,10 +1265,10 @@ class RenderEditor extends RenderEditableContainerBox
   Offset calculateBoundedFloatingCursorOffset(
       Offset rawCursorOffset, double preferredLineHeight) {
     var deltaPosition = Offset.zero;
-    final topBound = _kFloatingCursorAddedMargin.top;
+    const topBound = 4.0; // _kFloatingCursorAddedMargin.top is 4.0
     final bottomBound =
         size.height - preferredLineHeight + _kFloatingCursorAddedMargin.bottom;
-    final leftBound = _kFloatingCursorAddedMargin.left;
+    const leftBound = 4.0; // _kFloatingCursorAddedMargin.left is 4.0
     final rightBound = size.width - _kFloatingCursorAddedMargin.right;
 
     if (_previousOffset != null) {

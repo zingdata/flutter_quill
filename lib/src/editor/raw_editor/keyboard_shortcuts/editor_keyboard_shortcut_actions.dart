@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../document/attribute.dart';
 import '../../../document/style.dart';
-import '../../../toolbar/buttons/link_style2_button.dart';
+import '../../../toolbar/buttons/link_style/link_style2_button.dart';
 import '../../../toolbar/buttons/search/search_dialog.dart';
 import '../../editor.dart';
 import '../../widgets/link.dart';
@@ -18,7 +18,7 @@ class QuillEditorDeleteTextAction<T extends DirectionalTextEditingIntent>
   final QuillEditorTextBoundary Function(T intent) getTextBoundariesForIntent;
 
   TextRange _expandNonCollapsedRange(TextEditingValue value) {
-    final TextRange selection = value.selection;
+    final selection = value.selection;
     assert(selection.isValid);
     assert(!selection.isCollapsed);
     final atomicBoundary = QuillEditorCharacterBoundary(value);
